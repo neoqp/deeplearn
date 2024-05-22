@@ -1,0 +1,1 @@
+data_dir = "../../dataset/rsna-2024-lumbar-spine-degenerative-classification/"
