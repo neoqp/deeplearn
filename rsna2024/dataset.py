@@ -64,7 +64,7 @@ class DCMImageDataset(Dataset):
         img_path = os.path.join(img_path, series_id)
         img_path = img_path + '/' + str(self.df.iloc[idx]['number']) + '.dcm'
 
-        image = torch.from_numpy(pydicom.dcmread(str(img_path)).pixel_array.astype(np.float32))
+        image = torch.from_numpy(pydicom.dcmread(str(img_path)).pixel_array.astype(np.float64))
         image = image.unsqueeze(0)
         image = image.unsqueeze(0)
         image = F.interpolate(image, (224,224), mode='bilinear')
