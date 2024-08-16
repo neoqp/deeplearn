@@ -9,15 +9,6 @@ from model.unet import UNet
 from model.diffusion import DiffusionModel
 from utils import make_grid
 
-def transform(examples):
-    jitter = transforms.Compose([
-        transforms.Resize((128,128)),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-     ])
-    image_tensors = [jitter(image.convert("RGB")) for image in examples["image"]]
-    return {'img_input': image_tensors}
-
 def main():
     # load model
     model = UNet(in_dim=64,
@@ -26,7 +17,7 @@ def main():
                  )
     diffusion = DiffusionModel(model = model,
                                num_timesteps=1_000)
-    print(diffusion)
+    # print(diffusion)
     # load data
     transform = transforms.Compose([transforms.ToTensor()])
     train_dataset = datasets.CIFAR10(root='../../dataset', train=True, transform=transform)
@@ -35,7 +26,8 @@ def main():
     diffusion.to(torch.device("cuda"))
 
     best_loss = 100
-    for epoch in range(1_000):
+    diffusion.load_state_dict(torch.load('lastmodel.pt'))
+    for epoch in range(8, 1_000):
         # train
         print(f"{epoch}th epoch training...")
         loss_total = 0
@@ -50,7 +42,7 @@ def main():
         print(f"train_loss: {train_avg_loss}, lr: {2e-5}")
         loss_total = 0
         # eval
-        if train_avg_loss < best_loss:
+        if train_avg_loss < best_loss and epoch%50==0:
             best_loss = train_avg_loss
             with torch.no_grad():
                 x = diffusion.sample(16,3,128)
