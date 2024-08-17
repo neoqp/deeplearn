@@ -22,12 +22,13 @@ def main():
     transform = transforms.Compose([transforms.ToTensor()])
     train_dataset = datasets.CIFAR10(root='../../dataset', train=True, transform=transform)
     train_dataloader = DataLoader(train_dataset, batch_size=128)
-    optimizer = torch.optim.AdamW(diffusion.parameters(), lr=2e-5)
+    optimizer = torch.optim.AdamW(diffusion.parameters(), lr=2e-4)
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: 0.99 ** epoch)
     diffusion.to(torch.device("cuda"))
 
     best_loss = 100
-    diffusion.load_state_dict(torch.load('lastmodel.pt'))
-    for epoch in range(8, 1_000):
+    #diffusion.load_state_dict(torch.load('lastmodel.pt'))
+    for epoch in range(0, 1_000):
         # train
         print(f"{epoch}th epoch training...")
         loss_total = 0
@@ -39,13 +40,14 @@ def main():
             optimizer.step()
             loss_total += loss
         train_avg_loss = loss_total/len(train_dataloader)
-        print(f"train_loss: {train_avg_loss}, lr: {2e-5}")
+        print(f"train_loss: {train_avg_loss}, lr: {scheduler.get_last_lr()}")
         loss_total = 0
+        scheduler.step()
         # eval
-        if train_avg_loss < best_loss and epoch%50==0:
+        if train_avg_loss < best_loss and epoch%10==0:
             best_loss = train_avg_loss
             with torch.no_grad():
-                x = diffusion.sample(16,3,128)
+                x = diffusion.sample(16,3,32)
             imgs_grid = make_grid(x, 4, 4)
             imgs_grid.save(f"img/{epoch}.png")
             torch.save(diffusion.state_dict(), f"lastmodel.pt")
