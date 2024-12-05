@@ -13,7 +13,7 @@ def scale_img_linear(img):
 def unscale_img_linear(img):
     return (img + 1) / 2
 
-def schedule_beta_linear(num_timesteps):
+def schedule_beta_linear(num_timesteps): # 1,000 in paper
     scale = 1000/num_timesteps
     beta_start = scale * 1e-4
     beta_end = scale * 0.02

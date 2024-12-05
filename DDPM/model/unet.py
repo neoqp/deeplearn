@@ -72,7 +72,9 @@ class UNet(nn.Module):
             x = down(x, t)
             if isinstance(down, DownBlock):
                 h.append(x)
+
         x = self.mid(x, t)
+        
         for up in self.ups:
             if isinstance(up, UpSample):
                 x = up(x, t)
